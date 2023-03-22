@@ -1,0 +1,231 @@
+From 63a17ab37a03448f8052c4f8353743eba284a950 Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Wed, 22 Mar 2023 20:19:17 +0800
+Subject: [PATCH] add user alias
+
+---
+ .../pages/home/repos-recent/repos-recent.jsx  |  3 ++
+ src/components/pages/home/repos/repos.jsx     |  2 ++
+ .../pages/repo/build-list/build-list.jsx      |  3 +-
+ .../pages/users/user-form/user-form.jsx       | 32 ++++++++++++++++++-
+ .../pages/users/user-list/user-list.jsx       |  2 ++
+ .../users/user-list/user-list.module.scss     |  4 +--
+ src/pages/build/header/header.jsx             |  3 +-
+ src/pages/users/users.jsx                     |  5 +--
+ 8 files changed, 47 insertions(+), 7 deletions(-)
+
+diff --git a/src/components/pages/home/repos-recent/repos-recent.jsx b/src/components/pages/home/repos-recent/repos-recent.jsx
+index 982b9f6..beb61bd 100644
+--- a/src/components/pages/home/repos-recent/repos-recent.jsx
++++ b/src/components/pages/home/repos-recent/repos-recent.jsx
+@@ -47,6 +47,9 @@ const ReposRecent = (props) => {
+                   text={build?.sender}
+                 />
+               </div>
++              &nbsp;&nbsp;
++              <span>{build?.author_name}</span>
++              &nbsp;&nbsp;
+               {build && (
+               <div>{formatDistanceStrict(new Date(build.created * 1000), new Date(), { addSuffix: true })}</div>
+               )}
+diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
+index 67dea80..ab69d32 100644
+--- a/src/components/pages/home/repos/repos.jsx
++++ b/src/components/pages/home/repos/repos.jsx
+@@ -31,6 +31,7 @@ const Repos = (props) => {
+               <div className={cx('detail')}>
+                 <div className={cx('spacer')} />
+                 <div className={cx('commit')}>
++                  <span>{build?.author_name}</span>
+                   <strong>
+                     <Commit />
+                     {build?.after.slice(0, 8)}
+@@ -65,6 +66,7 @@ Repos.propTypes = {
+       deploy_to: PropTypes.string,
+       title: PropTypes.string,
+       message: PropTypes.string,
++      author_name: PropTypes.string,
+       after: PropTypes.string,
+       ref: PropTypes.string,
+       created: PropTypes.number,
+diff --git a/src/components/pages/repo/build-list/build-list.jsx b/src/components/pages/repo/build-list/build-list.jsx
+index 0f303c1..7cdda8b 100644
+--- a/src/components/pages/repo/build-list/build-list.jsx
++++ b/src/components/pages/repo/build-list/build-list.jsx
+@@ -31,7 +31,7 @@ const BuildListItem = ({ build, url }) => (
+               number={build.number}
+               event={build.event}
+               action={build.action}
+-              actor={build.sender}
++              actor={build.author_name}
+               avatar={build.author_avatar}
+               commit={build.after}
+               branch={build.target}
+@@ -76,6 +76,7 @@ const buildPropTypes = PropTypes.shape({
+   event: PropTypes.string,
+   action: PropTypes.string,
+   sender: PropTypes.string,
++  author_name: PropTypes.string,
+   author_avatar: PropTypes.string,
+   after: PropTypes.string,
+   target: PropTypes.string,
+diff --git a/src/components/pages/users/user-form/user-form.jsx b/src/components/pages/users/user-form/user-form.jsx
+index e6d373c..13d3f61 100644
+--- a/src/components/pages/users/user-form/user-form.jsx
++++ b/src/components/pages/users/user-form/user-form.jsx
+@@ -26,10 +26,27 @@ const EditUserForm = ({
+   };
+ 
+   const handleFieldChange = (field) => (event) => {
+-    setState((prev) => ({ ...prev, [field]: event.target.checked }));
++    switch (field) {
++      case 'admin':
++      case 'machine':
++        setState((prev) => ({ ...prev, [field]: event.target.checked }));
++        break;
++      default:
++        setState((prev) => ({ ...prev, [field]: event.target.value.trim() }));
++    }
+   };
+   return (
+     <Form className={cx('new-user-form')}>
++      <FormSection className={cx('new-user-form-column')}>
++        <Field.Input
++          label="Alias"
++          placeholder="useralias"
++          value={state.alias}
++          name="alias"
++          width={400}
++          onChange={handleFieldChange('alias')}
++        />
++      </FormSection>
+       <FormSection className={cx('new-user-form-column')}>
+         <Field.Checkbox
+           label="Admin User"
+@@ -85,12 +102,14 @@ EditUserForm.propTypes = {
+     machine: PropTypes.bool,
+     admin: PropTypes.bool,
+     login: PropTypes.string,
++    alias: PropTypes.string,
+   }).isRequired,
+ };
+ 
+ const NewUserForm = ({ handleSubmit, handleCancel }) => {
+   const [state, setState] = useState({
+     login: '',
++    alias: '',
+     email: '',
+     admin: false,
+     machine: false,
+@@ -125,6 +144,17 @@ const NewUserForm = ({ handleSubmit, handleCancel }) => {
+           onChange={handleFieldChange('login')}
+         />
+       </FormSection>
++      <FormSection className={cx('new-user-form-column')}>
++        <Field.Input
++          label="Alias"
++          placeholder="useralias"
++          value={state.alias}
++          name="alias"
++          width={400}
++          required
++          onChange={handleFieldChange('alias')}
++        />
++      </FormSection>
+       <FormSection className={cx('new-user-form-column')}>
+         <Field.Input
+           label="Email"
+diff --git a/src/components/pages/users/user-list/user-list.jsx b/src/components/pages/users/user-list/user-list.jsx
+index 6228dda..397f4ec 100644
+--- a/src/components/pages/users/user-list/user-list.jsx
++++ b/src/components/pages/users/user-list/user-list.jsx
+@@ -20,6 +20,7 @@ const UserList = (props) => (
+     <div className={cx('user-list-header')}>
+       <div />
+       <div>Username</div>
++      <div>Alias</div>
+       <div>Active</div>
+       <div>Type</div>
+       <div>Role</div>
+@@ -47,6 +48,7 @@ function UserListItem({ data, isCurrentUser, handleEditClick }) {
+           <Avatar className={cx('avatar')} text={data.login} path={data.avatar} alt={data.login} />
+         </div>
+         <div>{data.login}</div>
++        <div>{data.alias ? data.alias : ''}</div>
+         <div>{data.active ? 'Active' : 'Inactive'}</div>
+         <div>{data.machine ? 'Machine' : 'User'}</div>
+         <div>{data.admin ? 'Admin' : 'Member'}</div>
+diff --git a/src/components/pages/users/user-list/user-list.module.scss b/src/components/pages/users/user-list/user-list.module.scss
+index e2c8f8b..8b30892 100644
+--- a/src/components/pages/users/user-list/user-list.module.scss
++++ b/src/components/pages/users/user-list/user-list.module.scss
+@@ -15,7 +15,7 @@
+ 
+ .user-list-header {
+   display: grid;
+-  grid-template-columns: 24px auto 75px 75px 75px 125px 125px 24px;
++  grid-template-columns: 24px auto 125px 75px 75px 75px 125px 125px 24px;
+   grid-gap: 15px;
+   padding: 15px;
+ }
+@@ -30,7 +30,7 @@
+ 
+ .user-list-item {
+   display: grid;
+-  grid-template-columns: 24px auto 75px 75px 75px 125px 125px 24px;
++  grid-template-columns: 24px auto 125px 75px 75px 75px 125px 125px 24px;
+   grid-gap: 15px;
+   padding: 19px 15px;
+   text-align: left;
+diff --git a/src/pages/build/header/header.jsx b/src/pages/build/header/header.jsx
+index 499a7cc..472e48f 100644
+--- a/src/pages/build/header/header.jsx
++++ b/src/pages/build/header/header.jsx
+@@ -134,7 +134,7 @@ const Header = (props) => {
+               number={data.number}
+               event={data.event}
+               action={data.action}
+-              actor={data.sender}
++              actor={data.author_name}
+               avatar={data.author_avatar}
+               commit={data.after}
+               branch={data.target}
+@@ -160,6 +160,7 @@ Header.propTypes = {
+     event: PropTypes.string.isRequired,
+     action: PropTypes.string.isRequired,
+     sender: PropTypes.string.isRequired,
++    author_name: PropTypes.string,
+     author_avatar: PropTypes.string.isRequired,
+     after: PropTypes.string.isRequired,
+     target: PropTypes.string.isRequired,
+diff --git a/src/pages/users/users.jsx b/src/pages/users/users.jsx
+index f9e2572..03001f9 100644
+--- a/src/pages/users/users.jsx
++++ b/src/pages/users/users.jsx
+@@ -59,12 +59,13 @@ export default function Users({ user: currentUser }) {
+   }, [mutate, showError, showSuccess]);
+ 
+   const handleEditUserFormSubmit = useCallback(async (values) => {
+-    const { admin, login } = values;
++    const { admin, login, alias } = values;
+     try {
+       await axiosWrapper(`/api/users/${login}`, {
+         method: 'PATCH',
+         data: {
+           admin,
++          alias,
+         },
+       });
+       mutate();
+@@ -140,7 +141,7 @@ export default function Users({ user: currentUser }) {
+             handleSubmit={handleEditUserFormSubmit}
+             handleDelete={handleUserDelete}
+             handleCancel={toggleModal}
+-            initialValues={pick(users.find((user) => user.id === modalUserId))(['machine', 'admin', 'login'])}
++            initialValues={pick(users.find((user) => user.id === modalUserId))(['machine', 'admin', 'login', 'alias'])}
+           />
+         )}
+       </Modal>
+-- 
+2.25.1
+
