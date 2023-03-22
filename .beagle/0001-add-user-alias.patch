@@ -1,18 +1,18 @@
-From 63a17ab37a03448f8052c4f8353743eba284a950 Mon Sep 17 00:00:00 2001
+From 22ee2c9de8cfb8876a765f5e1506db7bce70f251 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Wed, 22 Mar 2023 20:19:17 +0800
-Subject: [PATCH] add user alias
+Date: Wed, 22 Mar 2023 22:32:38 +0800
+Subject: [PATCH] add user
 
 ---
  .../pages/home/repos-recent/repos-recent.jsx  |  3 ++
- src/components/pages/home/repos/repos.jsx     |  2 ++
+ src/components/pages/home/repos/repos.jsx     |  5 ++-
  .../pages/repo/build-list/build-list.jsx      |  3 +-
  .../pages/users/user-form/user-form.jsx       | 32 ++++++++++++++++++-
  .../pages/users/user-list/user-list.jsx       |  2 ++
  .../users/user-list/user-list.module.scss     |  4 +--
  src/pages/build/header/header.jsx             |  3 +-
  src/pages/users/users.jsx                     |  5 +--
- 8 files changed, 47 insertions(+), 7 deletions(-)
+ 8 files changed, 49 insertions(+), 8 deletions(-)
 
 diff --git a/src/components/pages/home/repos-recent/repos-recent.jsx b/src/components/pages/home/repos-recent/repos-recent.jsx
 index 982b9f6..beb61bd 100644
@@ -29,18 +29,23 @@ index 982b9f6..beb61bd 100644
                <div>{formatDistanceStrict(new Date(build.created * 1000), new Date(), { addSuffix: true })}</div>
                )}
 diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
-index 67dea80..ab69d32 100644
+index 67dea80..11a153e 100644
 --- a/src/components/pages/home/repos/repos.jsx
 +++ b/src/components/pages/home/repos/repos.jsx
-@@ -31,6 +31,7 @@ const Repos = (props) => {
+@@ -31,9 +31,11 @@ const Repos = (props) => {
                <div className={cx('detail')}>
                  <div className={cx('spacer')} />
                  <div className={cx('commit')}>
 +                  <span>{build?.author_name}</span>
++                  &nbsp;&nbsp;
                    <strong>
                      <Commit />
-                     {build?.after.slice(0, 8)}
-@@ -65,6 +66,7 @@ Repos.propTypes = {
+-                    {build?.after.slice(0, 8)}
++                    {build?.target}
+                   </strong>
+                   <span>{(build?.title || build?.message)}</span>
+                 </div>
+@@ -65,6 +67,7 @@ Repos.propTypes = {
        deploy_to: PropTypes.string,
        title: PropTypes.string,
        message: PropTypes.string,

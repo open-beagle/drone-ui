@@ -54,11 +54,11 @@ go generate dist/dist.go
 
 ```bash
 # 新建一个Tag
-git tag v2.9.1-beagle.0
+git tag v2.9.1-beagle.1
 
 # 推送一个Tag ，-f 强制更新
-git push -f origin v2.9.1-beagle.0
+git push -f origin v2.9.1-beagle.1
 
 # 删除本地Tag
-git tag -d v2.9.1-beagle.0
+git tag -d v2.9.1-beagle.1
 ```
