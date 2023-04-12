@@ -1,0 +1,511 @@
+From 1ee9d24e068350f805a19b78d185ddabebf7817d Mon Sep 17 00:00:00 2001
+From: shucheng <shucheng@bd-apaas.com>
+Date: Thu, 13 Apr 2023 01:06:10 +0800
+Subject: [PATCH] awecloud-devops
+
+---
+ src/app.jsx                                 | 32 ++++++++++-----------
+ src/components/pages/home/repos/repos.jsx   |  7 +++--
+ src/components/shared/sidebar/sidebar.jsx   |  6 ++--
+ src/pages/account/account.jsx               |  2 +-
+ src/pages/branches/branches.jsx             |  2 +-
+ src/pages/builds/builds.jsx                 |  2 +-
+ src/pages/deployments/deployments.jsx       |  2 +-
+ src/pages/login/login.jsx                   |  2 +-
+ src/pages/not-found/not-found.jsx           |  2 +-
+ src/pages/repo/repo.jsx                     | 28 +++++++++---------
+ src/pages/settings-admin/settings-admin.jsx |  8 +++---
+ src/pages/settings/settings.jsx             | 24 ++++++++--------
+ src/pages/welcome/welcome.jsx               |  6 ++--
+ src/routes/route-guard.jsx                  |  2 +-
+ 14 files changed, 64 insertions(+), 61 deletions(-)
+
+diff --git a/src/app.jsx b/src/app.jsx
+index 6a785f2..817dfef 100644
+--- a/src/app.jsx
++++ b/src/app.jsx
+@@ -51,8 +51,8 @@ export default function App() {
+               <Layouts.Base>
+                 <Switch>
+                   <Redirect from="/:url*(/+)" to={pathname.slice(0, -1)} />
+-                  <Route path={['/welcome', '/login/form', '/login/error', '/logout', '/register']} exact />
+-                  <Route path={['/settings*']} exact>
++                  <Route path={['/awecloud/devops/welcome', '/awecloud/devops/login/form', '/awecloud/devops/login/error', '/awecloud/devops/logout', '/awecloud/devops/register']} exact />
++                  <Route path={['/awecloud/devops/settings*']} exact>
+                     <Sidebar user={user} />
+                   </Route>
+                   <Route path={'/*'}>
+@@ -63,7 +63,7 @@ export default function App() {
+ 
+                 <Switch>
+                   <Routes.Home
+-                    path="/"
++                    path="/awecloud/devops/"
+                     componentProps={{
+                       user,
+                     }}
+@@ -71,33 +71,33 @@ export default function App() {
+                     exact
+                   />
+                   <Routes.Welcome
+-                    path="/welcome"
++                    path="/awecloud/devops/welcome"
+                     componentProps={{
+                       user,
+                     }}
+                     exact
+                   />
+                   <Routes.Register
+-                    path="/register"
++                    path="/awecloud/devops/register"
+                     componentProps={{
+                       user,
+                     }}
+                     exact
+                   />
+                   <Routes.LoginForm
+-                    path="/login/form"
++                    path="/awecloud/devops/login/form"
+                     exact
+                   />
+                   <Routes.LoginError
+-                    path="/login/error"
++                    path="/awecloud/devops/login/error"
+                     exact
+                   />
+                   <Routes.Logout
+-                    path="/logout"
++                    path="/awecloud/devops/logout"
+                     exact
+                   />
+                   <Routes.Account
+-                    path="/account"
++                    path="/awecloud/devops/account"
+                     componentProps={{
+                       user,
+                     }}
+@@ -106,7 +106,7 @@ export default function App() {
+                   />
+                   {/* contains nested routes */}
+                   <Routes.SettingsAdmin
+-                    path="/settings*"
++                    path="/awecloud/devops/settings*"
+                     componentProps={{
+                       user,
+                     }}
+@@ -116,12 +116,12 @@ export default function App() {
+                   {/* contains nested routes */}
+                   <Routes.Repo
+                     path={[
+-                      '/:namespace/:name',
+-                      '/:namespace/:name/deployments',
+-                      '/:namespace/:name/branches',
+-                      '/:namespace/:name/settings*',
+-                      '/:namespace/:name/:build',
+-                      '/:namespace/:name/:build/:stage?/:step?']}
++                      '/awecloud/devops/:namespace/:name',
++                      '/awecloud/devops/:namespace/:name/deployments',
++                      '/awecloud/devops/:namespace/:name/branches',
++                      '/awecloud/devops/:namespace/:name/settings*',
++                      '/awecloud/devops/:namespace/:name/:build',
++                      '/awecloud/devops/:namespace/:name/:build/:stage?/:step?']}
+                     componentProps={{
+                       user,
+                     }}
+diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
+index 67dea80..ce2cef0 100644
+--- a/src/components/pages/home/repos/repos.jsx
++++ b/src/components/pages/home/repos/repos.jsx
+@@ -20,7 +20,7 @@ const Repos = (props) => {
+           namespace, name, id, build, active, slug,
+         }) => (
+           <Link
+-            to={`/${namespace}/${name}${active ? '' : '/settings'}`}
++            to={`/awecloud/devops/${namespace}/${name}${active ? '' : '/awecloud/devops/settings'}`}
+             key={id}
+           >
+             <div className={cx('item', build ? null : 'inactive')}>
+@@ -31,9 +31,11 @@ const Repos = (props) => {
+               <div className={cx('detail')}>
+                 <div className={cx('spacer')} />
+                 <div className={cx('commit')}>
++                  <span>{build?.author_name}</span>
++                  &nbsp;&nbsp;
+                   <strong>
+                     <Commit />
+-                    {build?.after.slice(0, 8)}
++                    {build?.target}
+                   </strong>
+                   <span>{(build?.title || build?.message)}</span>
+                 </div>
+@@ -65,6 +67,7 @@ Repos.propTypes = {
+       deploy_to: PropTypes.string,
+       title: PropTypes.string,
+       message: PropTypes.string,
++      author_name: PropTypes.string,
+       after: PropTypes.string,
+       ref: PropTypes.string,
+       created: PropTypes.number,
+diff --git a/src/components/shared/sidebar/sidebar.jsx b/src/components/shared/sidebar/sidebar.jsx
+index a272516..6088c4a 100644
+--- a/src/components/shared/sidebar/sidebar.jsx
++++ b/src/components/shared/sidebar/sidebar.jsx
+@@ -17,7 +17,7 @@ import styles from './sidebar.module.scss';
+ const cx = classNames.bind(styles);
+ 
+ const Anonymous = () => (
+-  <Link className={cx('sidebar-item', 'anonymous')} to="/welcome">
++  <Link className={cx('sidebar-item', 'anonymous')} to="/awecloud/devops/welcome">
+     <div role="img" aria-label="Click to sign in">
+       <UserIcon />
+     </div>
+@@ -61,7 +61,7 @@ export default function Sidebar(props) {
+       {isUserAdmin ? (
+ 
+         <NavLink
+-          to="/settings"
++          to="/awecloud/devops/settings"
+           className={cx('sidebar-item')}
+           activeClassName={cx('sidebar-item-active')}
+         >
+@@ -71,7 +71,7 @@ export default function Sidebar(props) {
+       {isUserAuthenticated ? (
+         <NavLink
+           as="link"
+-          to="/account"
++          to="/awecloud/devops/account"
+           className={cx('sidebar-item')}
+           activeClassName={cx('sidebar-item-active')}
+           theme="plain"
+diff --git a/src/pages/account/account.jsx b/src/pages/account/account.jsx
+index da8184e..fd4b7c5 100644
+--- a/src/pages/account/account.jsx
++++ b/src/pages/account/account.jsx
+@@ -75,7 +75,7 @@ export default function Account() {
+     <>
+       <header className={cx('header')}>
+         <h1>Account Settings</h1>
+-        <a href="/logout" target="_self">Logout</a>
++        <a href="/awecloud/devops/logout" target="_self">Logout</a>
+       </header>
+       <section className={cx('wrapper')}>
+         {snippets.token.snippet ? (
+diff --git a/src/pages/branches/branches.jsx b/src/pages/branches/branches.jsx
+index 488ac49..83d7995 100644
+--- a/src/pages/branches/branches.jsx
++++ b/src/pages/branches/branches.jsx
+@@ -23,7 +23,7 @@ export default function Branches({ repo }) {
+   // user can proceed with repo activation
+   useLayoutEffect(() => {
+     if (!isRepoActive) {
+-      history.replace(`/${namespace}/${name}/settings`);
++      history.replace(`/awecloud/devops/${namespace}/${name}/settings`);
+     }
+   }, [isRepoActive, history, namespace, name]);
+ 
+diff --git a/src/pages/builds/builds.jsx b/src/pages/builds/builds.jsx
+index 5f0e8fa..e220b44 100644
+--- a/src/pages/builds/builds.jsx
++++ b/src/pages/builds/builds.jsx
+@@ -25,7 +25,7 @@ export default function Builds({ repo }) {
+   // user can proceed with repo activation
+   useLayoutEffect(() => {
+     if (!isRepoActive) {
+-      history.replace(`/${namespace}/${name}/settings`);
++      history.replace(`/awecloud/devops/${namespace}/${name}/settings`);
+     }
+   }, [isRepoActive, history, namespace, name]);
+ 
+diff --git a/src/pages/deployments/deployments.jsx b/src/pages/deployments/deployments.jsx
+index 1fcfb0c..d86757e 100644
+--- a/src/pages/deployments/deployments.jsx
++++ b/src/pages/deployments/deployments.jsx
+@@ -22,7 +22,7 @@ export default function Deployments({ repo }) {
+   // user can proceed with repo activation
+   useLayoutEffect(() => {
+     if (!isRepoActive) {
+-      history.replace(`/${namespace}/${name}/settings`);
++      history.replace(`/awecloud/devops/${namespace}/${name}/settings`);
+     }
+   }, [isRepoActive, history, namespace, name]);
+ 
+diff --git a/src/pages/login/login.jsx b/src/pages/login/login.jsx
+index f0eb264..a70b99d 100644
+--- a/src/pages/login/login.jsx
++++ b/src/pages/login/login.jsx
+@@ -29,7 +29,7 @@ export default function LoginForm() {
+           <h1 className={cx('title')}>Sign in using your Gogs credentials.</h1>
+           <span className={cx('title-sub')}>使用您的Gogs用户名和密码登录</span>
+         </div>
+-        <Form className={cx('form')} method="POST" action="/login">
++        <Form className={cx('form')} method="POST" action="/awecloud/devops/login">
+           <FormSection>
+             <Field.Input
+               label="Username"
+diff --git a/src/pages/not-found/not-found.jsx b/src/pages/not-found/not-found.jsx
+index df6af10..06061d1 100644
+--- a/src/pages/not-found/not-found.jsx
++++ b/src/pages/not-found/not-found.jsx
+@@ -24,7 +24,7 @@ export default function NotFound({ user }) {
+         {!user && (
+           <Button
+             as="link"
+-            to="/welcome"
++            to="/awecloud/devops/welcome"
+             theme="primary"
+             className={cx('btn')}
+           >
+diff --git a/src/pages/repo/repo.jsx b/src/pages/repo/repo.jsx
+index 9505433..159e8d8 100644
+--- a/src/pages/repo/repo.jsx
++++ b/src/pages/repo/repo.jsx
+@@ -29,25 +29,25 @@ const getTabProps = ({
+ }) => {
+   const tabs = [
+     {
+-      to: `/${namespace}/${name}`,
++      to: `/awecloud/devops/${namespace}/${name}`,
+       exact: true,
+       label: 'Builds',
+       tag: isRepoNavDisabled ? 'span' : NavLink,
+     },
+     {
+-      to: `/${namespace}/${name}/branches`,
++      to: `/awecloud/devops/${namespace}/${name}/branches`,
+       exact: true,
+       label: 'Branches',
+       tag: isRepoNavDisabled ? 'span' : NavLink,
+     },
+     {
+-      to: `/${namespace}/${name}/deployments`,
++      to: `/awecloud/devops/${namespace}/${name}/deployments`,
+       exact: true,
+       label: 'Deployments',
+       tag: isRepoNavDisabled ? 'span' : NavLink,
+     },
+     {
+-      to: `/${namespace}/${name}/settings`,
++      to: `/awecloud/devops/${namespace}/${name}/settings`,
+       label: 'Settings',
+       tag: NavLink,
+     },
+@@ -130,10 +130,10 @@ const Repo = ({ user }) => {
+     <Switch>
+       <Route
+         path={[
+-          '/:namespace/:name',
+-          '/:namespace/:name/deployments',
+-          '/:namespace/:name/branches',
+-          '/:namespace/:name/settings*',
++          '/awecloud/devops/:namespace/:name',
++          '/awecloud/devops/:namespace/:name/deployments',
++          '/awecloud/devops/:namespace/:name/branches',
++          '/awecloud/devops/:namespace/:name/settings*',
+         ]}
+         exact
+       >
+@@ -141,7 +141,7 @@ const Repo = ({ user }) => {
+           <header className={cx('header')}>
+             <div className={cx('inner')}>
+               <Breadcrumb className={cx('breadcrumb')}>
+-                <BreadcrumbItem href="/" text="Repositories" />
++                <BreadcrumbItem href="/awecloud/devops/" text="Repositories" />
+                 <BreadcrumbSpacer />
+               </Breadcrumb>
+               <h1>{name}</h1>
+@@ -161,7 +161,7 @@ const Repo = ({ user }) => {
+           <Switch>
+ 
+             <Routes.Branches
+-              path="/:namespace/:name/branches"
++              path="/awecloud/devops/:namespace/:name/branches"
+               componentProps={{
+                 user,
+                 repo,
+@@ -170,7 +170,7 @@ const Repo = ({ user }) => {
+               exact
+             />
+             <Routes.Deployments
+-              path="/:namespace/:name/deployments"
++              path="/awecloud/devops/:namespace/:name/deployments"
+               componentProps={{
+                 user,
+                 repo,
+@@ -180,7 +180,7 @@ const Repo = ({ user }) => {
+             />
+             {/* contains nested routes for crons and secrets */}
+             <Routes.Settings
+-              path="/:namespace/:name/settings*"
++              path="/awecloud/devops/:namespace/:name/settings*"
+               componentProps={{
+                 user,
+                 repo,
+@@ -188,7 +188,7 @@ const Repo = ({ user }) => {
+               visibility={VISIBILITY_LEVELS.PUBLIC}
+             />
+             <Routes.Builds
+-              path="/:namespace/:name"
++              path="/awecloud/devops/:namespace/:name"
+               componentProps={{
+                 user,
+                 repo,
+@@ -207,7 +207,7 @@ const Repo = ({ user }) => {
+         </>
+       </Route>
+       <Routes.Build
+-        path="/:namespace/:name/:build/:stage?/:step?"
++        path="/awecloud/devops/:namespace/:name/:build/:stage?/:step?"
+         componentProps={{
+           user,
+           userIsAdminOrHasWritePerm,
+diff --git a/src/pages/settings-admin/settings-admin.jsx b/src/pages/settings-admin/settings-admin.jsx
+index 9b74aa0..27ad51c 100644
+--- a/src/pages/settings-admin/settings-admin.jsx
++++ b/src/pages/settings-admin/settings-admin.jsx
+@@ -15,7 +15,7 @@ const cx = classNames.bind(css);
+ 
+ const getTabProps = () => [
+   {
+-    to: '/settings/users',
++    to: '/awecloud/devops/settings/users',
+     exact: true,
+     label: 'Users',
+   },
+@@ -53,12 +53,12 @@ const SettingsAdmin = ({ user }) => {
+       {navEl}
+       <Switch>
+         <Route
+-          path="/settings"
+-          component={() => <Redirect from="/settings" to="/settings/users" strict exact />}
++          path="/awecloud/devops/settings"
++          component={() => <Redirect from="/awecloud/devops/settings" to="/awecloud/devops/settings/users" strict exact />}
+           exact
+         />
+         <Routes.Users
+-          path="/settings/users"
++          path="/awecloud/devops/settings/users"
+           componentProps={{
+             user,
+           }}
+diff --git a/src/pages/settings/settings.jsx b/src/pages/settings/settings.jsx
+index 5a4d737..6c1e5c5 100644
+--- a/src/pages/settings/settings.jsx
++++ b/src/pages/settings/settings.jsx
+@@ -91,7 +91,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings`}
++                to={`/awecloud/devops/${namespace}/${name}/settings`}
+                 exact
+               >
+                 General
+@@ -99,7 +99,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings/secrets`}
++                to={`/awecloud/devops/${namespace}/${name}/settings/secrets`}
+                 exact
+               >
+                 Secrets
+@@ -107,7 +107,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings/cron`}
++                to={`/awecloud/devops/${namespace}/${name}/settings/cron`}
+                 exact
+               >
+                 Cron Jobs
+@@ -115,7 +115,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings/badges`}
++                to={`/awecloud/devops/${namespace}/${name}/settings/badges`}
+                 exact
+               >
+                 Badges
+@@ -124,7 +124,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings/org-secrets`}
++                to={`/awecloud/devops/${namespace}/${name}/settings/org-secrets`}
+                 exact
+               >
+                 Secrets
+@@ -132,7 +132,7 @@ export default function Settings({ user, repo }) {
+               <NavLink
+                 className={cx('settings-nav-item')}
+                 activeClassName={cx('settings-nav-item-active')}
+-                to={`/${namespace}/${name}/settings/templates`}
++                to={`/awecloud/devops/${namespace}/${name}/settings/templates`}
+                 exact
+               >
+                 Templates
+@@ -141,15 +141,15 @@ export default function Settings({ user, repo }) {
+           </aside>
+           <Switch>
+             <Route
+-              path="/:namespace/:name/settings"
++              path="/awecloud/devops/:namespace/:name/settings"
+               component={GeneralCallback}
+               exact
+             />
+-            <Route path="/:namespace/:name/settings/secrets" component={Secrets} />
+-            <Route path="/:namespace/:name/settings/cron" component={Cron} />
+-            <Route path="/:namespace/:name/settings/badges" component={Badges} />
+-            <Route path="/:namespace/:name/settings/org-secrets" component={OrgSecrets} />
+-            <Route path="/:namespace/:name/settings/templates" component={Templates} />
++            <Route path="/awecloud/devops/:namespace/:name/settings/secrets" component={Secrets} />
++            <Route path="/awecloud/devops/:namespace/:name/settings/cron" component={Cron} />
++            <Route path="/awecloud/devops/:namespace/:name/settings/badges" component={Badges} />
++            <Route path="/awecloud/devops/:namespace/:name/settings/org-secrets" component={OrgSecrets} />
++            <Route path="/awecloud/devops/:namespace/:name/settings/templates" component={Templates} />
+ 
+           </Switch>
+         </section>
+diff --git a/src/pages/welcome/welcome.jsx b/src/pages/welcome/welcome.jsx
+index b2e679f..946ce31 100644
+--- a/src/pages/welcome/welcome.jsx
++++ b/src/pages/welcome/welcome.jsx
+@@ -25,10 +25,10 @@ export default function Welcome() {
+   const { pathname, search } = useLocation();
+   let error = null;
+   switch (pathname) {
+-    case '/logout':
++    case '/awecloud/devops/logout':
+       error = <div className={cx('error')}>Your session has been successfully terminated.</div>;
+       break;
+-    case '/login/error':
++    case '/awecloud/devops/login/error':
+       if (window.location.host === 'cloud.drone.io') {
+         // special case for cloud.drone.io
+         error = (
+@@ -68,7 +68,7 @@ export default function Welcome() {
+           {error}
+           <p>You will be redirected to your source control management system to authenticate.</p>
+         </div>
+-        <a href="/login" target="_self" className={cx('btn')}>
++        <a href="/awecloud/devops/login" target="_self" className={cx('btn')}>
+           <span>Continue</span>
+           <ChevronDownIcon className={cx('chevron-right')} />
+         </a>
+diff --git a/src/routes/route-guard.jsx b/src/routes/route-guard.jsx
+index 9e50938..586a240 100644
+--- a/src/routes/route-guard.jsx
++++ b/src/routes/route-guard.jsx
+@@ -30,7 +30,7 @@ export default function RouteGuard(props) {
+     ].some((cond) => !!cond)) return route;
+ 
+   if (visibility !== VISIBILITY_LEVELS.PUBLIC && isUserAuthenticated === false) {
+-    return <Redirect to="/welcome" />;
++    return <Redirect to="/awecloud/devops/welcome" />;
+   }
+   return <NotFound user={user} />;
+ }
+-- 
+2.39.2
+

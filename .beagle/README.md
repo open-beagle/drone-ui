@@ -29,6 +29,7 @@ REACT_APP_DRONE_SERVER=https://drone.company.com
 REACT_APP_DRONE_TOKEN=<your_drone_token>
 
 # Run the app
+export PUBLIC_URL=/awecloud/devops
 yarn start
 ```
 
@@ -42,10 +43,14 @@ yarn start
 ```bash
 # apply patch
 git apply .beagle/0001-add-user-alias.patch
+git apply .beagle/0002-awecloud-devops.patch
 
 ## build nodejs
-export PUBLIC_URL=.
+export PUBLIC_URL=/awecloud/devops
 yarn build
+
+## install togo
+go install github.com/bradrydzewski/togo@latest
 
 ## go generate
 go generate dist/dist.go
@@ -55,11 +60,11 @@ go generate dist/dist.go
 
 ```bash
 # 新建一个Tag
-git tag v2.9.1-beagle.2
+git tag v2.9.1-beagle.3
 
 # 推送一个Tag ，-f 强制更新
-git push -f origin v2.9.1-beagle.2
+git push -f origin v2.9.1-beagle.3
 
 # 删除本地Tag
-git tag -d v2.9.1-beagle.2
+git tag -d v2.9.1-beagle.3
 ```
