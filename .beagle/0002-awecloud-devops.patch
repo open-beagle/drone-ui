@@ -1,26 +1,28 @@
-From 10d59b7f830cf2b73c454642df4690a8d05f7120 Mon Sep 17 00:00:00 2001
+From 18bb98a314d32ed55c6abfdeac6aa22bbf4ee722 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 13 Apr 2023 12:09:42 +0800
+Date: Thu, 13 Apr 2023 12:58:46 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
- package.json                                |  2 +-
- src/_constants/index.js                     |  2 +-
- src/app.jsx                                 | 32 ++++++++++-----------
- src/components/pages/home/repos/repos.jsx   |  7 +++--
- src/components/shared/sidebar/sidebar.jsx   |  6 ++--
- src/pages/account/account.jsx               |  2 +-
- src/pages/branches/branches.jsx             |  2 +-
- src/pages/builds/builds.jsx                 |  2 +-
- src/pages/deployments/deployments.jsx       |  2 +-
- src/pages/login/login.jsx                   |  2 +-
- src/pages/not-found/not-found.jsx           |  2 +-
- src/pages/repo/repo.jsx                     | 28 +++++++++---------
- src/pages/settings-admin/settings-admin.jsx |  8 +++---
- src/pages/settings/settings.jsx             | 24 ++++++++--------
- src/pages/welcome/welcome.jsx               |  6 ++--
- src/routes/route-guard.jsx                  |  2 +-
- 16 files changed, 66 insertions(+), 63 deletions(-)
+ package.json                                  |  2 +-
+ src/_constants/index.js                       |  2 +-
+ src/app.jsx                                   | 32 +++++++++----------
+ .../repos-recent/repos-recent.module.scss     |  2 +-
+ src/components/pages/home/repos/repos.jsx     |  7 ++--
+ src/components/shared/header/header.jsx       |  4 +--
+ src/components/shared/sidebar/sidebar.jsx     |  8 ++---
+ src/pages/account/account.jsx                 |  2 +-
+ src/pages/branches/branches.jsx               |  2 +-
+ src/pages/builds/builds.jsx                   |  2 +-
+ src/pages/deployments/deployments.jsx         |  2 +-
+ src/pages/login/login.jsx                     |  2 +-
+ src/pages/not-found/not-found.jsx             |  2 +-
+ src/pages/repo/repo.jsx                       | 28 ++++++++--------
+ src/pages/settings-admin/settings-admin.jsx   |  8 ++---
+ src/pages/settings/settings.jsx               | 24 +++++++-------
+ src/pages/welcome/welcome.jsx                 |  6 ++--
+ src/routes/route-guard.jsx                    |  2 +-
+ 18 files changed, 70 insertions(+), 67 deletions(-)
 
 diff --git a/package.json b/package.json
 index c68e818..6eb2644 100644
@@ -140,6 +142,19 @@ index 6a785f2..817dfef 100644
                      componentProps={{
                        user,
                      }}
+diff --git a/src/components/pages/home/repos-recent/repos-recent.module.scss b/src/components/pages/home/repos-recent/repos-recent.module.scss
+index cbcb8b1..9bf36f9 100644
+--- a/src/components/pages/home/repos-recent/repos-recent.module.scss
++++ b/src/components/pages/home/repos-recent/repos-recent.module.scss
+@@ -79,7 +79,7 @@
+ 
+       &::after {
+         margin-left: 1px;
+-        content: "/";
++        content: "/awecloud/devops/";
+       }
+     }
+   }
 diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
 index 67dea80..ce2cef0 100644
 --- a/src/components/pages/home/repos/repos.jsx
@@ -174,8 +189,30 @@ index 67dea80..ce2cef0 100644
        after: PropTypes.string,
        ref: PropTypes.string,
        created: PropTypes.number,
+diff --git a/src/components/shared/header/header.jsx b/src/components/shared/header/header.jsx
+index da82b5b..60cd262 100644
+--- a/src/components/shared/header/header.jsx
++++ b/src/components/shared/header/header.jsx
+@@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
+ const buildBreadcrumbs = ({ namespace, name, build }) => {
+   if (!namespace || !name) return null;
+   const repo = !build ? <span>{`${namespace}/${name}`}</span> : (
+-    <Link to={`/${namespace}/${name}`}>
++    <Link to={`/awecloud/devops/${namespace}/${name}`}>
+       {namespace}
+       /
+       {name}
+@@ -18,7 +18,7 @@ const buildBreadcrumbs = ({ namespace, name, build }) => {
+   );
+   return (
+     <nav className={cx('header-row', 'breadcrumbs')}>
+-      <Link to="/">Repositories</Link>
++      <Link to="/awecloud/devops/">Repositories</Link>
+       {repo}
+       {build && (
+         <span>
 diff --git a/src/components/shared/sidebar/sidebar.jsx b/src/components/shared/sidebar/sidebar.jsx
-index a272516..6088c4a 100644
+index a272516..9005f93 100644
 --- a/src/components/shared/sidebar/sidebar.jsx
 +++ b/src/components/shared/sidebar/sidebar.jsx
 @@ -17,7 +17,7 @@ import styles from './sidebar.module.scss';
@@ -187,6 +224,15 @@ index a272516..6088c4a 100644
      <div role="img" aria-label="Click to sign in">
        <UserIcon />
      </div>
+@@ -38,7 +38,7 @@ export default function Sidebar(props) {
+     <div className={cx('top')}>
+       <Button
+         as="link"
+-        to="/"
++        to="/awecloud/devops/"
+         className={cx('sidebar-item', 'logo')}
+       >
+         <img src={logo} alt="Drone Logo" />
 @@ -61,7 +61,7 @@ export default function Sidebar(props) {
        {isUserAdmin ? (
  
