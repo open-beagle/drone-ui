@@ -1,19 +1,26 @@
-From 18bb98a314d32ed55c6abfdeac6aa22bbf4ee722 Mon Sep 17 00:00:00 2001
+From 495a6e4043b09dd3eb134438d5ef8be307f59e89 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 13 Apr 2023 12:58:46 +0800
+Date: Thu, 13 Apr 2023 22:13:07 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
  package.json                                  |  2 +-
  src/_constants/index.js                       |  2 +-
  src/app.jsx                                   | 32 +++++++++----------
+ .../pages/build/graph-view/graph-view.jsx     |  4 +--
+ .../build/log-view/stage-nav/stage-nav.jsx    |  4 +--
+ .../pages/home/repos-recent/repos-recent.jsx  |  2 +-
  .../repos-recent/repos-recent.module.scss     |  2 +-
  src/components/pages/home/repos/repos.jsx     |  7 ++--
- src/components/shared/header/header.jsx       |  4 +--
+ src/components/shared/activity/simple.jsx     |  2 +-
+ src/components/shared/header/header.jsx       |  6 ++--
  src/components/shared/sidebar/sidebar.jsx     |  8 ++---
  src/pages/account/account.jsx                 |  2 +-
  src/pages/branches/branches.jsx               |  2 +-
+ src/pages/build/build.jsx                     |  8 ++---
+ src/pages/build/header/header.jsx             |  4 +--
  src/pages/builds/builds.jsx                   |  2 +-
+ src/pages/builds/summary/summary.jsx          |  2 +-
  src/pages/deployments/deployments.jsx         |  2 +-
  src/pages/login/login.jsx                     |  2 +-
  src/pages/not-found/not-found.jsx             |  2 +-
@@ -22,7 +29,7 @@ Subject: [PATCH] awecloud-devops
  src/pages/settings/settings.jsx               | 24 +++++++-------
  src/pages/welcome/welcome.jsx                 |  6 ++--
  src/routes/route-guard.jsx                    |  2 +-
- 18 files changed, 70 insertions(+), 67 deletions(-)
+ 25 files changed, 84 insertions(+), 81 deletions(-)
 
 diff --git a/package.json b/package.json
 index c68e818..6eb2644 100644
@@ -142,6 +149,60 @@ index 6a785f2..817dfef 100644
                      componentProps={{
                        user,
                      }}
+diff --git a/src/components/pages/build/graph-view/graph-view.jsx b/src/components/pages/build/graph-view/graph-view.jsx
+index a12e09f..ae9b9e3 100644
+--- a/src/components/pages/build/graph-view/graph-view.jsx
++++ b/src/components/pages/build/graph-view/graph-view.jsx
+@@ -27,12 +27,12 @@ const GraphView = (props) => {
+   const showStepInfoDrawer = () => setIsStepInfoShown(true);
+ 
+   const stageSelectHandler = (selectedStage) => {
+-    history.replace(`/${namespace}/${name}/${build}/${selectedStage}/1`);
++    history.replace(`/awecloud/devops/${namespace}/${name}/${build}/${selectedStage}/1`);
+   };
+ 
+   const stepSelectHandler = (selectedStep) => {
+     showStepInfoDrawer();
+-    history.replace(`/${namespace}/${name}/${build}/${stage}/${selectedStep}`);
++    history.replace(`/awecloud/devops/${namespace}/${name}/${build}/${stage}/${selectedStep}`);
+   };
+ 
+   return (
+diff --git a/src/components/pages/build/log-view/stage-nav/stage-nav.jsx b/src/components/pages/build/log-view/stage-nav/stage-nav.jsx
+index 74f8a5d..dd3eceb 100644
+--- a/src/components/pages/build/log-view/stage-nav/stage-nav.jsx
++++ b/src/components/pages/build/log-view/stage-nav/stage-nav.jsx
+@@ -148,7 +148,7 @@ const StageDefault = (props) => {
+                 const isStepInPath = !!location.pathname.split('/')[4];
+                 return (match || (stageNumber === stageInPath && !isStepInPath));
+               }}
+-              to={`/${namespace}/${name}/${build}/${stageNumber}/${stepNumber}`}
++              to={`/awecloud/devops/${namespace}/${name}/${build}/${stageNumber}/${stepNumber}`}
+               title={stepName}
+               exact
+               onClick={onStepClick}
+@@ -180,7 +180,7 @@ const StageEmpty = (props) => {
+     <NavLink
+       activeClassName={cx('stage-active')}
+       className={cx('stage')}
+-      to={`/${namespace}/${name}/${build}/${stageNumber}`}
++      to={`/awecloud/devops/${namespace}/${name}/${build}/${stageNumber}`}
+       exact
+     >
+       <h3 className={cx('stage-header')}>
+diff --git a/src/components/pages/home/repos-recent/repos-recent.jsx b/src/components/pages/home/repos-recent/repos-recent.jsx
+index 982b9f6..a9eb153 100644
+--- a/src/components/pages/home/repos-recent/repos-recent.jsx
++++ b/src/components/pages/home/repos-recent/repos-recent.jsx
+@@ -19,7 +19,7 @@ const ReposRecent = (props) => {
+       {!!repos?.length && props.repos.map(({
+         namespace, name, build, id,
+       }) => (
+-        <Link to={`/${namespace}/${name}`} key={id}>
++        <Link to={`/awecloud/devops/${namespace}/${name}`} key={id}>
+           <div className={cx('card')}>
+             <div className={cx('header')}>
+               <h3 className={cx('title')}>
 diff --git a/src/components/pages/home/repos-recent/repos-recent.module.scss b/src/components/pages/home/repos-recent/repos-recent.module.scss
 index cbcb8b1..9bf36f9 100644
 --- a/src/components/pages/home/repos-recent/repos-recent.module.scss
@@ -189,8 +250,21 @@ index 67dea80..ce2cef0 100644
        after: PropTypes.string,
        ref: PropTypes.string,
        created: PropTypes.number,
+diff --git a/src/components/shared/activity/simple.jsx b/src/components/shared/activity/simple.jsx
+index 63b24f3..c76f2f0 100644
+--- a/src/components/shared/activity/simple.jsx
++++ b/src/components/shared/activity/simple.jsx
+@@ -38,7 +38,7 @@ function wrapBuildLink(child, {
+   namespace, name, number, deeplink,
+ }) {
+   return deeplink === true ? (
+-    <a href={`/${namespace}/${name}/${number}`}>{child}</a>
++    <a href={`/awecloud/devops/${namespace}/${name}/${number}`}>{child}</a>
+   ) : child;
+ }
+ 
 diff --git a/src/components/shared/header/header.jsx b/src/components/shared/header/header.jsx
-index da82b5b..60cd262 100644
+index da82b5b..4a5a963 100644
 --- a/src/components/shared/header/header.jsx
 +++ b/src/components/shared/header/header.jsx
 @@ -10,7 +10,7 @@ const cx = classNames.bind(styles);
@@ -211,6 +285,15 @@ index da82b5b..60cd262 100644
        {repo}
        {build && (
          <span>
+@@ -51,7 +51,7 @@ const Header = (props) => {
+     </div>
+   ) : null;
+   // back to feed
+-  const backToFeed = showBackToFeed ? <Link className={cx('back-to-feed')} to={`/${namespace}/${name}`}>Activity feed</Link> : null;
++  const backToFeed = showBackToFeed ? <Link className={cx('back-to-feed')} to={`/awecloud/devops/${namespace}/${name}`}>Activity feed</Link> : null;
+   // heading
+   const heading = title ? (
+     <h1 className={cx('heading')}>{title}</h1>
 diff --git a/src/components/shared/sidebar/sidebar.jsx b/src/components/shared/sidebar/sidebar.jsx
 index a272516..9005f93 100644
 --- a/src/components/shared/sidebar/sidebar.jsx
@@ -277,6 +360,68 @@ index 488ac49..83d7995 100644
      }
    }, [isRepoActive, history, namespace, name]);
  
+diff --git a/src/pages/build/build.jsx b/src/pages/build/build.jsx
+index 713f246..120c591 100644
+--- a/src/pages/build/build.jsx
++++ b/src/pages/build/build.jsx
+@@ -122,7 +122,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
+         method: 'POST',
+       });
+       if (res) {
+-        history.push(`/${namespace}/${name}/${res.number}`);
++        history.push(`/awecloud/devops/${namespace}/${name}/${res.number}`);
+       } else {
+         showError('Unable to create new deploy in this repo');
+       }
+@@ -137,7 +137,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
+     try {
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'DELETE' });
+       await mutate(res, false);
+-      history.push(`/${namespace}/${name}/${res.number}`);
++      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}`);
+     } catch (e) {
+       showError(`Unable to cancel build: ${e.message}`);
+       // eslint-disable-next-line
+@@ -148,7 +148,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
+   const handleRestartClick = useCallback(async () => {
+     try {
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'POST' });
+-      history.push(`/${namespace}/${name}/${res.number}/1/1`);
++      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}/1/1`);
+     } catch (e) {
+       showError(`Unable to restart build: ${e.message}`);
+       // eslint-disable-next-line
+@@ -159,7 +159,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
+   const handleDebugClick = useCallback(async () => {
+     try {
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}?debug=true`, { method: 'POST' });
+-      history.push(`/${namespace}/${name}/${res.number}`);
++      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}`);
+     } catch (e) {
+       showError(`Unable to restart in debug mode: ${e.message}`);
+       // eslint-disable-next-line
+diff --git a/src/pages/build/header/header.jsx b/src/pages/build/header/header.jsx
+index 499a7cc..93f4e72 100644
+--- a/src/pages/build/header/header.jsx
++++ b/src/pages/build/header/header.jsx
+@@ -68,7 +68,7 @@ const Header = (props) => {
+     <header className={cx('header')}>
+       <div className={cx('breadcrumbs')}>
+         <Breadcrumb className={cx('breadcrumbs-inner')}>
+-          <BreadcrumbItem href={`/${namespace}/${name}`} text="Builds" />
++          <BreadcrumbItem href={`/awecloud/devops/${namespace}/${name}`} text="Builds" />
+           <BreadcrumbSpacer />
+           <BreadcrumbItem text={`#${build}`} />
+           <BreadcrumbSpacer />
+@@ -115,7 +115,7 @@ const Header = (props) => {
+ 
+       <div className={cx('title')}>
+         <h1>
+-          <Link to={`/${namespace}/${name}`}>
++          <Link to={`/awecloud/devops/${namespace}/${name}`}>
+             <ArrowIcon />
+           </Link>
+           {name}
 diff --git a/src/pages/builds/builds.jsx b/src/pages/builds/builds.jsx
 index 5f0e8fa..e220b44 100644
 --- a/src/pages/builds/builds.jsx
@@ -290,6 +435,19 @@ index 5f0e8fa..e220b44 100644
      }
    }, [isRepoActive, history, namespace, name]);
  
+diff --git a/src/pages/builds/summary/summary.jsx b/src/pages/builds/summary/summary.jsx
+index c75a1f3..9b7a44d 100644
+--- a/src/pages/builds/summary/summary.jsx
++++ b/src/pages/builds/summary/summary.jsx
+@@ -48,7 +48,7 @@ const Summary = (props) => {
+   const { namespace, name } = useParams();
+   const history = useHistory();
+ 
+-  const handleBarClick = useCallback(({ number }) => history.push(`/${namespace}/${name}/${number}`), [namespace, name, history]);
++  const handleBarClick = useCallback(({ number }) => history.push(`/awecloud/devops/${namespace}/${name}/${number}`), [namespace, name, history]);
+ 
+   const { median, latest } = useMemo(() => getSummaryMeta(barData), [barData]);
+   return (
 diff --git a/src/pages/deployments/deployments.jsx b/src/pages/deployments/deployments.jsx
 index 1fcfb0c..d86757e 100644
 --- a/src/pages/deployments/deployments.jsx
