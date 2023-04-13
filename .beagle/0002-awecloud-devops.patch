@@ -1,9 +1,10 @@
-From 1ee9d24e068350f805a19b78d185ddabebf7817d Mon Sep 17 00:00:00 2001
+From a20279a36b4b8b21056d9150b92b4803d004e795 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 13 Apr 2023 01:06:10 +0800
+Date: Thu, 13 Apr 2023 09:47:51 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
+ package.json                                |  2 +-
  src/app.jsx                                 | 32 ++++++++++-----------
  src/components/pages/home/repos/repos.jsx   |  7 +++--
  src/components/shared/sidebar/sidebar.jsx   |  6 ++--
@@ -18,8 +19,21 @@ Subject: [PATCH] awecloud-devops
  src/pages/settings/settings.jsx             | 24 ++++++++--------
  src/pages/welcome/welcome.jsx               |  6 ++--
  src/routes/route-guard.jsx                  |  2 +-
- 14 files changed, 64 insertions(+), 61 deletions(-)
+ 15 files changed, 65 insertions(+), 62 deletions(-)
 
+diff --git a/package.json b/package.json
+index c68e818..6eb2644 100644
+--- a/package.json
++++ b/package.json
+@@ -5,7 +5,7 @@
+   "scripts": {
+     "start": "react-scripts start",
+     "build": "GENERATE_SOURCEMAP=false react-scripts build",
+-    "postbuild": "rm -rf ./dist/files; mv ./build ./dist/files",
++    "postbuild": "rm -rf ./dist/files; mkdir -p ./dist/files/awecloud; mv ./build ./dist/files/awecloud/devops",
+     "serve": "npx http-server ./build -p 3001",
+     "test": "react-scripts test",
+     "eject": "react-scripts eject",
 diff --git a/src/app.jsx b/src/app.jsx
 index 6a785f2..817dfef 100644
 --- a/src/app.jsx
