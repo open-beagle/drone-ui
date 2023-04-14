@@ -1,6 +1,6 @@
-From 495a6e4043b09dd3eb134438d5ef8be307f59e89 Mon Sep 17 00:00:00 2001
+From 623ddb7951f26faa18e550944dc8324e01e00b37 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Thu, 13 Apr 2023 22:13:07 +0800
+Date: Fri, 14 Apr 2023 11:34:43 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
@@ -10,7 +10,6 @@ Subject: [PATCH] awecloud-devops
  .../pages/build/graph-view/graph-view.jsx     |  4 +--
  .../build/log-view/stage-nav/stage-nav.jsx    |  4 +--
  .../pages/home/repos-recent/repos-recent.jsx  |  2 +-
- .../repos-recent/repos-recent.module.scss     |  2 +-
  src/components/pages/home/repos/repos.jsx     |  7 ++--
  src/components/shared/activity/simple.jsx     |  2 +-
  src/components/shared/header/header.jsx       |  6 ++--
@@ -29,7 +28,7 @@ Subject: [PATCH] awecloud-devops
  src/pages/settings/settings.jsx               | 24 +++++++-------
  src/pages/welcome/welcome.jsx                 |  6 ++--
  src/routes/route-guard.jsx                    |  2 +-
- 25 files changed, 84 insertions(+), 81 deletions(-)
+ 24 files changed, 83 insertions(+), 80 deletions(-)
 
 diff --git a/package.json b/package.json
 index c68e818..6eb2644 100644
@@ -203,19 +202,6 @@ index 982b9f6..a9eb153 100644
            <div className={cx('card')}>
              <div className={cx('header')}>
                <h3 className={cx('title')}>
-diff --git a/src/components/pages/home/repos-recent/repos-recent.module.scss b/src/components/pages/home/repos-recent/repos-recent.module.scss
-index cbcb8b1..9bf36f9 100644
---- a/src/components/pages/home/repos-recent/repos-recent.module.scss
-+++ b/src/components/pages/home/repos-recent/repos-recent.module.scss
-@@ -79,7 +79,7 @@
- 
-       &::after {
-         margin-left: 1px;
--        content: "/";
-+        content: "/awecloud/devops/";
-       }
-     }
-   }
 diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
 index 67dea80..ce2cef0 100644
 --- a/src/components/pages/home/repos/repos.jsx
