@@ -1,6 +1,6 @@
-From 623ddb7951f26faa18e550944dc8324e01e00b37 Mon Sep 17 00:00:00 2001
+From d3b4a71cf753df0c674309c855d6cb42e076ead9 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Fri, 14 Apr 2023 11:34:43 +0800
+Date: Mon, 17 Apr 2023 15:22:02 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
@@ -203,7 +203,7 @@ index 982b9f6..a9eb153 100644
              <div className={cx('header')}>
                <h3 className={cx('title')}>
 diff --git a/src/components/pages/home/repos/repos.jsx b/src/components/pages/home/repos/repos.jsx
-index 67dea80..ce2cef0 100644
+index 67dea80..85f123c 100644
 --- a/src/components/pages/home/repos/repos.jsx
 +++ b/src/components/pages/home/repos/repos.jsx
 @@ -20,7 +20,7 @@ const Repos = (props) => {
@@ -211,7 +211,7 @@ index 67dea80..ce2cef0 100644
          }) => (
            <Link
 -            to={`/${namespace}/${name}${active ? '' : '/settings'}`}
-+            to={`/awecloud/devops/${namespace}/${name}${active ? '' : '/awecloud/devops/settings'}`}
++            to={`/awecloud/devops/${namespace}/${name}${active ? '' : '/settings'}`}
              key={id}
            >
              <div className={cx('item', build ? null : 'inactive')}>
