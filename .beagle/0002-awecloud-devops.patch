@@ -1,6 +1,6 @@
-From d3b4a71cf753df0c674309c855d6cb42e076ead9 Mon Sep 17 00:00:00 2001
+From 58d2d2288ac53b59e62b8d555abb2d4fc4abd8a3 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Mon, 17 Apr 2023 15:22:02 +0800
+Date: Sat, 8 Jul 2023 00:02:36 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
@@ -14,6 +14,7 @@ Subject: [PATCH] awecloud-devops
  src/components/shared/activity/simple.jsx     |  2 +-
  src/components/shared/header/header.jsx       |  6 ++--
  src/components/shared/sidebar/sidebar.jsx     |  8 ++---
+ src/hooks/swr/builds.js                       |  2 +-
  src/pages/account/account.jsx                 |  2 +-
  src/pages/branches/branches.jsx               |  2 +-
  src/pages/build/build.jsx                     |  8 ++---
@@ -28,7 +29,7 @@ Subject: [PATCH] awecloud-devops
  src/pages/settings/settings.jsx               | 24 +++++++-------
  src/pages/welcome/welcome.jsx                 |  6 ++--
  src/routes/route-guard.jsx                    |  2 +-
- 24 files changed, 83 insertions(+), 80 deletions(-)
+ 25 files changed, 84 insertions(+), 81 deletions(-)
 
 diff --git a/package.json b/package.json
 index c68e818..6eb2644 100644
@@ -320,6 +321,19 @@ index a272516..9005f93 100644
            className={cx('sidebar-item')}
            activeClassName={cx('sidebar-item-active')}
            theme="plain"
+diff --git a/src/hooks/swr/builds.js b/src/hooks/swr/builds.js
+index c2b8531..22d2642 100644
+--- a/src/hooks/swr/builds.js
++++ b/src/hooks/swr/builds.js
+@@ -130,7 +130,7 @@ const updateBuilds = async (slug, repo, newBuild = null) => {
+ };
+ 
+ const updateBuild = (location, repo) => {
+-  const [currentNamespace, currentName, currentBuildNumber] = location.split('/').filter(Boolean);
++  const [currentAwecloud, currentDevops, currentNamespace, currentName, currentBuildNumber] = location.split('/').filter(Boolean);
+   const { namespace: eventNamespace, name: eventName, build: { number: eventBuildNumber } } = repo;
+   // if current build matches event build params, do mutation
+   if (currentNamespace === eventNamespace
 diff --git a/src/pages/account/account.jsx b/src/pages/account/account.jsx
 index da8184e..fd4b7c5 100644
 --- a/src/pages/account/account.jsx
