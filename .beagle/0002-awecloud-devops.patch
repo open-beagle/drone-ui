@@ -1,6 +1,6 @@
-From 1372cd533e19a47a367ea1a7b69bc5c512dbe7b5 Mon Sep 17 00:00:00 2001
+From 041cd6892bbe35b287b837a12209b318c9029d00 Mon Sep 17 00:00:00 2001
 From: shucheng <shucheng@bd-apaas.com>
-Date: Sat, 8 Jul 2023 22:49:17 +0800
+Date: Sun, 9 Jul 2023 11:23:01 +0800
 Subject: [PATCH] awecloud-devops
 
 ---
@@ -14,32 +14,22 @@ Subject: [PATCH] awecloud-devops
  src/components/shared/activity/simple.jsx     |  2 +-
  src/components/shared/header/header.jsx       |  6 ++--
  src/components/shared/sidebar/sidebar.jsx     |  8 ++---
- src/hooks/swr/builds.js                       | 16 +++++-----
- src/hooks/swr/cards.js                        |  2 +-
- src/hooks/swr/logs.js                         |  4 +--
- src/hooks/swr/repo.js                         |  2 +-
- src/hooks/swr/use-branches.js                 |  2 +-
- src/hooks/swr/use-crons.js                    |  2 +-
- src/hooks/swr/use-deployments.js              |  2 +-
- src/hooks/swr/use-secrets.js                  |  2 +-
+ src/hooks/swr/builds.js                       |  6 ++--
  src/pages/account/account.jsx                 |  2 +-
  src/pages/branches/branches.jsx               |  2 +-
- src/pages/build/build.jsx                     | 20 ++++++------
+ src/pages/build/build.jsx                     |  8 ++---
  src/pages/build/header/header.jsx             |  4 +--
  src/pages/builds/builds.jsx                   |  2 +-
  src/pages/builds/summary/summary.jsx          |  2 +-
  src/pages/deployments/deployments.jsx         |  2 +-
  src/pages/login/login.jsx                     |  2 +-
  src/pages/not-found/not-found.jsx             |  2 +-
- src/pages/repo/repo.jsx                       | 30 ++++++++---------
+ src/pages/repo/repo.jsx                       | 28 ++++++++--------
  src/pages/settings-admin/settings-admin.jsx   |  8 ++---
- src/pages/settings/cron/cron.jsx              |  4 +--
- src/pages/settings/general/general.jsx        |  4 +--
- src/pages/settings/secrets/secrets.jsx        |  4 +--
- src/pages/settings/settings.jsx               | 26 +++++++--------
+ src/pages/settings/settings.jsx               | 24 +++++++-------
  src/pages/welcome/welcome.jsx                 |  6 ++--
  src/routes/route-guard.jsx                    |  2 +-
- 35 files changed, 113 insertions(+), 110 deletions(-)
+ 25 files changed, 86 insertions(+), 83 deletions(-)
 
 diff --git a/package.json b/package.json
 index c68e818..6eb2644 100644
@@ -332,46 +322,28 @@ index a272516..9005f93 100644
            activeClassName={cx('sidebar-item-active')}
            theme="plain"
 diff --git a/src/hooks/swr/builds.js b/src/hooks/swr/builds.js
-index c2b8531..a200383 100644
+index c2b8531..5828440 100644
 --- a/src/hooks/swr/builds.js
 +++ b/src/hooks/swr/builds.js
-@@ -18,7 +18,7 @@ const useBuilds = ({ namespace, name }) => {
-     if (previousPageData && previousPageData.length < MAX_PAGE_LENGTH) {
-       return null;
-     }
--    return `/api/repos/${namespace}/${name}/builds?page=${index}&per_page=${MAX_PAGE_LENGTH}`; // SWR key
-+    return `/awecloud/devops/api/repos/${namespace}/${name}/builds?page=${index}&per_page=${MAX_PAGE_LENGTH}`; // SWR key
-   };
+@@ -78,7 +78,7 @@ const updateLatestRepos = (repo) => (latest) => {
  
-   const {
-@@ -43,7 +43,7 @@ const useBuilds = ({ namespace, name }) => {
-   };
- };
- 
--const useBuild = ({ namespace, name, build }) => useSWRBase(`/api/repos/${namespace}/${name}/builds/${build}`);
-+const useBuild = ({ namespace, name, build }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}`);
- 
- /* useStreamBuildEvents helpers */
- 
-@@ -87,7 +87,7 @@ const updateBuilds = async (slug, repo, newBuild = null) => {
- 
-   /* @TODO @NOTE
-   / There should have been used simple key like
--  / `/api/repos/${namespace}/${name}/builds?page=1',
-+  / `/awecloud/devops/api/repos/${namespace}/${name}/builds?page=1',
-   / but for some weird reason Builds page won't get its data
-   / mutated using cached data stored for that key.
-   /
+ // activity feed updater
+ const updateBuilds = async (slug, repo, newBuild = null) => {
+-  if (`/${repo.namespace}/${repo.name}` !== slug) {
++  if (`/awecloud/devops/${repo.namespace}/${repo.name}` !== slug) {
+     // no need to do anything actually since user
+     // is on the activity feed of another repo
+     return;
 @@ -101,7 +101,7 @@ const updateBuilds = async (slug, repo, newBuild = null) => {
    /
    / probably, it makes sense to use paginated data without useSWR
    */
 -  const path = `arg@"many"@"/api/repos${slug}/builds?page=1&per_page=${MAX_PAGE_LENGTH}"`;
-+  const path = `arg@"many"@"/awecloud/devops/api/repos${slug}/builds?page=1&per_page=${MAX_PAGE_LENGTH}"`;
++  const path = `arg@"many"@"/api/repos/${repo.namespace}/${repo.name}/builds?page=1&per_page=${MAX_PAGE_LENGTH}"`;
    mutateGlobal(path, async (builds) => {
      const build = newBuild ?? repo.build;
      /* if no cache or no data,
-@@ -130,14 +130,14 @@ const updateBuilds = async (slug, repo, newBuild = null) => {
+@@ -130,7 +130,7 @@ const updateBuilds = async (slug, repo, newBuild = null) => {
  };
  
  const updateBuild = (location, repo) => {
@@ -380,109 +352,6 @@ index c2b8531..a200383 100644
    const { namespace: eventNamespace, name: eventName, build: { number: eventBuildNumber } } = repo;
    // if current build matches event build params, do mutation
    if (currentNamespace === eventNamespace
-       && currentName === eventName
-       && +currentBuildNumber === eventBuildNumber
-   ) {
--    mutateGlobal(`/api/repos/${eventNamespace}/${eventName}/builds/${eventBuildNumber}`, async () => repo.build, false);
-+    mutateGlobal(`/awecloud/devops/api/repos/${eventNamespace}/${eventName}/builds/${eventBuildNumber}`, async () => repo.build, false);
-   }
- };
- 
-@@ -173,12 +173,12 @@ const useStreamBuildEvents = () => {
-       default:
-     }
- 
--    mutateGlobal('/api/user/repos?latest=true', updateLatestRepos(repo), false);
-+    mutateGlobal('/awecloud/devops/api/user/repos?latest=true', updateLatestRepos(repo), false);
-     update(repo);
-   };
- 
-   useEffect(() => {
--    const path = `${instance}/api/stream${token ? `?access_token=${token}` : ''}`;
-+    const path = `${instance}/awecloud/devops/api/stream${token ? `?access_token=${token}` : ''}`;
-     const eventSource = new EventSource(path);
-     eventSource.onmessage = handleEventSourceMessage;
-     eventSource.onerror = forceRerender;
-diff --git a/src/hooks/swr/cards.js b/src/hooks/swr/cards.js
-index 86df14f..23a1edf 100644
---- a/src/hooks/swr/cards.js
-+++ b/src/hooks/swr/cards.js
-@@ -2,4 +2,4 @@ import useSWRBase from './use-swr-base';
- 
- export const useCard = ({
-   namespace, name, build, stage, step,
--}) => useSWRBase(`/api/repos/${namespace}/${name}/cards/${build}/${stage}/${step}`);
-+}) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/cards/${build}/${stage}/${step}`);
-diff --git a/src/hooks/swr/logs.js b/src/hooks/swr/logs.js
-index d19e1ce..9cbfb35 100644
---- a/src/hooks/swr/logs.js
-+++ b/src/hooks/swr/logs.js
-@@ -25,7 +25,7 @@ function escapeLogs(logs) {
- const useLogs = (dispatch, actionTypes, {
-   namespace, name, build, stage = 1, step = 1,
- }, shouldFetchLogs) => {
--  const { data, error } = useSWR(() => (shouldFetchLogs === true ? `/api/repos/${namespace}/${name}/builds/${build}/logs/${stage}/${step}` : null));
-+  const { data, error } = useSWR(() => (shouldFetchLogs === true ? `/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}/logs/${stage}/${step}` : null));
-   const formattedLogs = useMemo(() => escapeLogs(data), [data]);
- 
-   useEffect(() => {
-@@ -68,7 +68,7 @@ const useStreamLogs = (dispatch,
-       return `${instance}/api/stream/${pathBody}${token ? `?access_token=${token}` : ''}`;
-     }
-     // make path for mutation
--    return `/api/repos/${pathBody}`;
-+    return `/awecloud/devops/api/repos/${pathBody}`;
-   }, [shouldStreamLogs, namespace, name, build, stage, step]);
- 
-   const messageHandler = useCallback((event) => {
-diff --git a/src/hooks/swr/repo.js b/src/hooks/swr/repo.js
-index b39a1da..e875369 100644
---- a/src/hooks/swr/repo.js
-+++ b/src/hooks/swr/repo.js
-@@ -1,6 +1,6 @@
- import useSWRBase from './use-swr-base';
- 
--const useRepo = ({ namespace, name }) => useSWRBase(`/api/repos/${namespace}/${name}`);
-+const useRepo = ({ namespace, name }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}`);
- 
- const useLatestRepos = (shouldFetch = false) => useSWRBase(shouldFetch ? '/api/user/repos?latest=true' : null);
- 
-diff --git a/src/hooks/swr/use-branches.js b/src/hooks/swr/use-branches.js
-index 598f987..eac5966 100644
---- a/src/hooks/swr/use-branches.js
-+++ b/src/hooks/swr/use-branches.js
-@@ -1,3 +1,3 @@
- import useSWRBase from './use-swr-base';
- 
--export default ({ namespace, name }) => useSWRBase(`/api/repos/${namespace}/${name}/builds/branches`);
-+export default ({ namespace, name }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/builds/branches`);
-diff --git a/src/hooks/swr/use-crons.js b/src/hooks/swr/use-crons.js
-index 93ac36f..92d0df2 100644
---- a/src/hooks/swr/use-crons.js
-+++ b/src/hooks/swr/use-crons.js
-@@ -1,3 +1,3 @@
- import useSWRBase from './use-swr-base';
- 
--export default ({ namespace, name }) => useSWRBase(`/api/repos/${namespace}/${name}/cron`);
-+export default ({ namespace, name }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/cron`);
-diff --git a/src/hooks/swr/use-deployments.js b/src/hooks/swr/use-deployments.js
-index d870990..9467b89 100644
---- a/src/hooks/swr/use-deployments.js
-+++ b/src/hooks/swr/use-deployments.js
-@@ -1,3 +1,3 @@
- import useSWRBase from './use-swr-base';
- 
--export default ({ namespace, name }) => useSWRBase(`/api/repos/${namespace}/${name}/builds/deployments`);
-+export default ({ namespace, name }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/builds/deployments`);
-diff --git a/src/hooks/swr/use-secrets.js b/src/hooks/swr/use-secrets.js
-index 3ca8c07..aea5052 100644
---- a/src/hooks/swr/use-secrets.js
-+++ b/src/hooks/swr/use-secrets.js
-@@ -1,3 +1,3 @@
- import useSWRBase from './use-swr-base';
- 
--export default ({ namespace, name }) => useSWRBase(`/api/repos/${namespace}/${name}/secrets`);
-+export default ({ namespace, name }) => useSWRBase(`/awecloud/devops/api/repos/${namespace}/${name}/secrets`);
 diff --git a/src/pages/account/account.jsx b/src/pages/account/account.jsx
 index da8184e..fd4b7c5 100644
 --- a/src/pages/account/account.jsx
@@ -510,15 +379,10 @@ index 488ac49..83d7995 100644
    }, [isRepoActive, history, namespace, name]);
  
 diff --git a/src/pages/build/build.jsx b/src/pages/build/build.jsx
-index 713f246..2abb7dc 100644
+index 713f246..120c591 100644
 --- a/src/pages/build/build.jsx
 +++ b/src/pages/build/build.jsx
-@@ -118,11 +118,11 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
-     const encode = encodeURIComponent;
-     const queryString = Object.entries(queryParams).map(([key, value]) => `${encode(key)}=${encode(value)}`).join('&');
-     try {
--      const res = await axiosWrapper(`${instance}/api/repos/${namespace}/${name}/builds/${build}/${action}?${queryString}`, {
-+      const res = await axiosWrapper(`${instance}/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}/${action}?${queryString}`, {
+@@ -122,7 +122,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
          method: 'POST',
        });
        if (res) {
@@ -527,58 +391,33 @@ index 713f246..2abb7dc 100644
        } else {
          showError('Unable to create new deploy in this repo');
        }
-@@ -135,9 +135,9 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
- 
-   const handleCancelClick = useCallback(async () => {
+@@ -137,7 +137,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
      try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'DELETE' });
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}`, { method: 'DELETE' });
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'DELETE' });
        await mutate(res, false);
 -      history.push(`/${namespace}/${name}/${res.number}`);
 +      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}`);
      } catch (e) {
        showError(`Unable to cancel build: ${e.message}`);
        // eslint-disable-next-line
-@@ -147,8 +147,8 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
- 
+@@ -148,7 +148,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
    const handleRestartClick = useCallback(async () => {
      try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'POST' });
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}`, { method: 'POST' });
 -      history.push(`/${namespace}/${name}/${res.number}/1/1`);
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}`, { method: 'POST' });
 +      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}/1/1`);
      } catch (e) {
        showError(`Unable to restart build: ${e.message}`);
        // eslint-disable-next-line
-@@ -158,8 +158,8 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
- 
+@@ -159,7 +159,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
    const handleDebugClick = useCallback(async () => {
      try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}?debug=true`, { method: 'POST' });
+       const res = await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}?debug=true`, { method: 'POST' });
 -      history.push(`/${namespace}/${name}/${res.number}`);
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}?debug=true`, { method: 'POST' });
 +      history.push(`/awecloud/devops/${namespace}/${name}/${res.number}`);
      } catch (e) {
        showError(`Unable to restart in debug mode: ${e.message}`);
        // eslint-disable-next-line
-@@ -169,7 +169,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
- 
-   const handleApproveClick = useCallback(async () => {
-     try {
--      await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}/approve/${stage}`, {
-+      await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}/approve/${stage}`, {
-         method: 'POST',
-       });
-       await mutate();
-@@ -182,7 +182,7 @@ export default function Build({ user, userIsAdminOrHasWritePerm }) {
- 
-   const handleDeclineClick = useCallback(async () => {
-     try {
--      await axiosWrapper(`/api/repos/${namespace}/${name}/builds/${build}/decline/${stage}`, {
-+      await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/builds/${build}/decline/${stage}`, {
-         method: 'POST',
-       });
-       await mutate();
 diff --git a/src/pages/build/header/header.jsx b/src/pages/build/header/header.jsx
 index 499a7cc..93f4e72 100644
 --- a/src/pages/build/header/header.jsx
@@ -667,7 +506,7 @@ index df6af10..06061d1 100644
              className={cx('btn')}
            >
 diff --git a/src/pages/repo/repo.jsx b/src/pages/repo/repo.jsx
-index 9505433..8b5a164 100644
+index 9505433..159e8d8 100644
 --- a/src/pages/repo/repo.jsx
 +++ b/src/pages/repo/repo.jsx
 @@ -29,25 +29,25 @@ const getTabProps = ({
@@ -700,15 +539,6 @@ index 9505433..8b5a164 100644
        label: 'Settings',
        tag: NavLink,
      },
-@@ -107,7 +107,7 @@ const Repo = ({ user }) => {
-       values.parameters.forEach((param) => { queryParams.set(param.key, param.value); });
-     }
-     const queryString = queryParams.toString();
--    const endpoint = `/api/repos/${namespace}/${name}/builds${queryString.length ? `?${queryString}` : ''}`;
-+    const endpoint = `/awecloud/devops/api/repos/${namespace}/${name}/builds${queryString.length ? `?${queryString}` : ''}`;
-     try {
-       const newBuild = await axiosWrapper(endpoint, {
-         method: 'POST',
 @@ -130,10 +130,10 @@ const Repo = ({ user }) => {
      <Switch>
        <Route
@@ -807,85 +637,10 @@ index 9b74aa0..27ad51c 100644
            componentProps={{
              user,
            }}
-diff --git a/src/pages/settings/cron/cron.jsx b/src/pages/settings/cron/cron.jsx
-index 36ff38d..ee94b12 100644
---- a/src/pages/settings/cron/cron.jsx
-+++ b/src/pages/settings/cron/cron.jsx
-@@ -86,7 +86,7 @@ export default function Secrets() {
- 
-   const handleAddCron = useCallback(async (values) => {
-     try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}/cron`, {
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/cron`, {
-         method: 'POST',
-         data: { ...values, branch: values.branch || 'master' },
-       });
-@@ -103,7 +103,7 @@ export default function Secrets() {
-     const userAgreed = confirm('Are you sure you want to remove cron job?');
-     if (userAgreed) {
-       try {
--        await axiosWrapper(`/api/repos/${namespace}/${name}/cron/${cronName}`, { method: 'DELETE' });
-+        await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/cron/${cronName}`, { method: 'DELETE' });
-         showSuccess('Cron has been removed successfully');
-         mutate(data.filter((cronItem) => cronItem.name !== cronName), false);
-       } catch (e) {
-diff --git a/src/pages/settings/general/general.jsx b/src/pages/settings/general/general.jsx
-index 6ed3124..9a67e55 100644
---- a/src/pages/settings/general/general.jsx
-+++ b/src/pages/settings/general/general.jsx
-@@ -54,7 +54,7 @@ export default function General({ user, repo }) {
-     const userAgreed = confirm('Are you sure you want to disable this repo?');
-     if (userAgreed) {
-       try {
--        await axiosWrapper(`/api/repos/${namespace}/${name}`, { method: 'DELETE' });
-+        await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}`, { method: 'DELETE' });
-         mutate();
-         showSuccess('Repo has been disabled');
-       } catch (e) {
-@@ -67,7 +67,7 @@ export default function General({ user, repo }) {
- 
-   const handleSettingsSubmit = async () => {
-     try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}`, { method: 'PATCH', data: { ...settings, timeout: +settings.timeout } });
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}`, { method: 'PATCH', data: { ...settings, timeout: +settings.timeout } });
-       mutate(res);
-       showSuccess('Changes have been saved');
-     } catch (e) {
-diff --git a/src/pages/settings/secrets/secrets.jsx b/src/pages/settings/secrets/secrets.jsx
-index 42d9ce9..9eb271e 100644
---- a/src/pages/settings/secrets/secrets.jsx
-+++ b/src/pages/settings/secrets/secrets.jsx
-@@ -22,7 +22,7 @@ export default function Secrets() {
- 
-   const handleAddSecret = useCallback(async (values) => {
-     try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}/secrets`,
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/secrets`,
-         {
-           method: 'POST',
-           data: values,
-@@ -41,7 +41,7 @@ export default function Secrets() {
-     const userAgreed = window.confirm('Are you sure you want to delete this secret?');
-     if (userAgreed) {
-       try {
--        await axiosWrapper(`/api/repos/${namespace}/${name}/secrets/${secretName}`, {
-+        await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}/secrets/${secretName}`, {
-           method: 'DELETE',
-         });
-         mutate(data.filter((secretItem) => secretItem.name !== secretName), false);
 diff --git a/src/pages/settings/settings.jsx b/src/pages/settings/settings.jsx
-index 5a4d737..828425c 100644
+index 5a4d737..6c1e5c5 100644
 --- a/src/pages/settings/settings.jsx
 +++ b/src/pages/settings/settings.jsx
-@@ -70,7 +70,7 @@ export default function Settings({ user, repo }) {
- 
-   const handleEnableRepo = useCallback(async () => {
-     try {
--      const res = await axiosWrapper(`/api/repos/${namespace}/${name}`, { method: 'POST' });
-+      const res = await axiosWrapper(`/awecloud/devops/api/repos/${namespace}/${name}`, { method: 'POST' });
-       mutate(res, false);
-       showSuccess('Repo has been successfully enabled');
-     } catch (e) {
 @@ -91,7 +91,7 @@ export default function Settings({ user, repo }) {
                <NavLink
                  className={cx('settings-nav-item')}

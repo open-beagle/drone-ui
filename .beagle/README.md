@@ -54,17 +54,21 @@ go install github.com/bradrydzewski/togo@latest
 
 ## go generate
 go generate dist/dist.go
+
+## 撤销Patch
+git apply -R .beagle/0001-add-user-alias.patch
+git apply -R .beagle/0002-awecloud-devops.patch
 ```
 
 ## publish
 
 ```bash
 # 新建一个Tag
-git tag v2.9.1-beagle.13
+git tag v2.9.1-beagle.14
 
 # 推送一个Tag ，-f 强制更新
-git push -f origin v2.9.1-beagle.13
+git push -f origin v2.9.1-beagle.14
 
 # 删除本地Tag
-git tag -d v2.9.1-beagle.13
+git tag -d v2.9.1-beagle.14
 ```
